@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PM Interview Coach</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0a1a;--panel:#151233;--p2:#1f1a47;--ink:#f3f1ff;--muted:#a9a3d1;--line:#3a3280;--cyan:#22e4ff;--gold:#ffd23f;--ok:#3dffa2;--mid:#ffb84d;--bad:#ff6b7a}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{padding:env(safe-area-inset-top,0px) 14px env(safe-area-inset-bottom,0px)}
+.wrap{max-width:760px;margin:0 auto;padding:16px 0 60px}
+h1{font-size:26px;margin:6px 0 4px}
+h2{font-size:21px;line-height:1.3;margin:4px 0 12px}
+p{line-height:1.6;margin:0 0 12px;color:#e6e2ff}
+.sub{color:var(--muted);font-size:14px;margin-bottom:16px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:14px}
+.kicker{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--cyan);font-weight:800;margin-bottom:6px}
+.muted{color:var(--muted);font-size:14px}
+.btn{border:0;border-radius:12px;padding:12px 18px;font-weight:800;font-size:15px;background:var(--gold);color:#1b1433;cursor:pointer}
+.btn.ghost{background:var(--p2);color:var(--ink);border:1px solid var(--line)}
+.btn.cyan{background:var(--cyan);color:#06222a}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,.opt:focus-visible,.nav:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;align-items:center}
+.nav{background:none;border:0;color:var(--muted);font-size:14px;cursor:pointer;padding:6px 0}
+.nav.on{color:var(--gold);font-weight:800}
+.navbar{display:flex;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:14px}
+.opt{width:100%;text-align:left;background:var(--p2);border:1px solid var(--line);border-radius:14px;padding:14px 16px;color:var(--ink);font-size:15px;cursor:pointer;margin-bottom:10px;line-height:1.45}
+.opt:hover:not([disabled]){border-color:var(--cyan)}
+.opt[disabled]{cursor:default}
+.opt.chosen{border:2px solid var(--gold)}
+.tag{display:inline-block;font-size:12px;font-weight:800;padding:3px 9px;border-radius:999px;margin-bottom:8px;letter-spacing:.5px}
+.t2{background:var(--ok);color:#06241a}.t1{background:var(--mid);color:#2a1800}.t0{background:var(--bad);color:#2a0008}
+.feedback{background:#0c0a22;border-left:4px solid var(--cyan);border-radius:10px;padding:12px 14px;margin:6px 0 12px;font-size:14px;line-height:1.55}
+.bar{height:12px;background:#0c0a22;border-radius:999px;overflow:hidden;border:1px solid var(--line);margin:6px 0 4px}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--gold));transition:width .6s}
+.mod{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-bottom:12px}
+.score{font-weight:800;font-size:15px}
+.timer{font-variant-numeric:tabular-nums;font-weight:800;color:var(--gold)}
+input,textarea{width:100%;background:#0c0a22;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;font-size:14px;margin:4px 0 10px}
+textarea{min-height:64px;resize:vertical}
+label{font-size:13px;color:var(--muted);font-weight:600}
+.check{font-size:14px;margin:4px 0}
+.check.ok{color:var(--ok)}.check.todo{color:var(--muted)}
+.story{border-top:1px solid var(--line);padding-top:10px;margin-top:10px;font-size:14px}
+textarea.code{min-height:110px;font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.skip{position:absolute;left:-9999px;top:auto;background:var(--gold);color:#1b1433;padding:8px 12px;border-radius:8px;font-weight:800;z-index:9}
+.skip:focus{left:14px;top:10px}
+textarea:focus,input:focus{outline:3px solid var(--cyan);outline-offset:1px}
+.sr{position:absolute;left:-9999px}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+.hero{float:right;margin:0 0 8px 12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{background:var(--p2);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer}
+.chip:hover{border-color:var(--cyan)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:520px){h1{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>PM Interview Coach</h1>
+  <div class="sub">Practice the thinking interviewers score: clarify, structure, decide, measure. Progress saves in this browser.</div>
+  <a class="skip" href="#app">Skip to content</a>
+  </header>
+  <div class="navbar" role="navigation" aria-label="Sections">
+    <button class="nav" id="n-home" onclick="go('home')">Dashboard</button>
+    <button class="nav" id="n-star" onclick="go('star')">STAR Stories</button>
+    <button class="nav" id="n-mock" onclick="startMock()">Mock Interview</button>
+    <button class="nav" id="n-data" onclick="go('data')">Backup</button>
+  </div>
+  <main id="app" tabindex="-1"></main>
+  <div role="status" aria-live="polite" class="sr"></div>
+</div>
+
+<script>
+const KEY='pm-interview-coach-v3';
+const TAGS=[{q:2,t:'Strong',c:'t2'},{q:1,t:'Good',c:'t1'},{q:0,t:'Weak',c:'t0'}];
+const MI={'Product Design':'🎨','Metrics Diagnosis':'📊','Prioritization':'🧭','AI Product Sense':'🤖','Estimation':'🧮','Behavioral':'🗣️','Product Improvement':'🛠️'};
+const icon=m=>MI[m.replace(/ \(\d\)$/,'')]||'🎯';
+
+/* Question bank: each step has 3 options scored Strong (2), Good (1), Weak (0), each with an explanation. */
+const BANK=[
+{id:'design',mod:'Product Design',q:'Design a product that helps busy parents plan family dinners.',
+ steps:[
+  {name:'Clarify',p:'What should you do first?',o:[
+   {t:'Start sketching features like meal plans and grocery lists.',q:0,e:'Jumping to features skips the user problem. Interviewers look for problem framing first.'},
+   {t:'Ask who the parents are, what busy means, and what success looks like.',q:2,e:'This sets the user segment and goal, which every later decision depends on.'},
+   {t:'Ask only about budget and launch date.',q:1,e:'Constraints matter, but you still need the user and the goal.'}]},
+  {name:'Solve',p:'Which user pain should the first version target?',o:[
+   {t:'Recipe variety across every cuisine.',q:0,e:'Broad and unfocused. Nothing ties it to a clear pain.'},
+   {t:'Deciding dinner quickly after work, which leads to last-minute takeout.',q:2,e:'A specific pain tied to the segment. You can test it and measure it.'},
+   {t:'Nutrition tracking for children.',q:1,e:'Valid, but it adds scope beyond the core pain of this segment.'}]},
+  {name:'Measure',p:'How would you measure success?',o:[
+   {t:'Number of recipes in the app.',q:0,e:'An output metric. It says nothing about whether the user got value.'},
+   {t:'Weekly planners and the share of planned dinners that get cooked, with time-in-app as a guardrail.',q:2,e:'Pairs an engagement metric with an outcome metric and a guardrail.'},
+   {t:'App downloads.',q:1,e:'Acquisition only. It does not show that the product helped.'}]}
+ ],
+ model:'Clarify the segment and the pain (decision fatigue at dinner), define a narrow first version (weekly plan plus one-tap grocery list), then measure planned-dinner rate, weekly retention, and a guardrail such as time spent.'},
+
+{id:'metrics',mod:'Metrics Diagnosis',q:'Daily active users dropped 8% week over week. What do you do?',
+ steps:[
+  {name:'Clarify',p:'What is your first move?',o:[
+   {t:'Launch a re-engagement campaign right away.',q:0,e:'Acting before diagnosing wastes effort and can hide the real cause.'},
+   {t:'Confirm the drop is real: check dashboards, pipelines, dates, and known events like holidays.',q:2,e:'Rules out measurement problems before you explain user behavior.'},
+   {t:'Ask leadership if they think it is a problem.',q:1,e:'Alignment matters, but data validation comes first.'}]},
+  {name:'Solve',p:'How do you locate the drop?',o:[
+   {t:'Look at the overall average.',q:0,e:'Averages hide where the decline is concentrated.'},
+   {t:'Segment by platform, country, acquisition channel, and new versus returning users.',q:2,e:'This finds where the drop concentrates, which points to a cause.'},
+   {t:'Compare against last year only.',q:1,e:'Seasonality helps, but it is a single cut.'}]},
+  {name:'Measure',p:'Which hypothesis should you test first?',o:[
+   {t:'Users are getting bored.',q:0,e:'Vague and not testable.'},
+   {t:'A release broke onboarding on Android, so only new Android users dropped.',q:2,e:'Specific and testable, and it matches the segmentation.'},
+   {t:'A competitor launched something.',q:1,e:'Plausible, but it needs evidence from the segmentation first.'}]}
+ ],
+ model:'Validate the data, segment the drop by platform and cohort, form a testable hypothesis, verify it in logs or with a fix, then roll back or ship the fix and monitor recovery.'},
+
+{id:'prio',mod:'Prioritization',q:'Three engineers, one quarter. Requests: (A) checkout crash hitting 2% of orders, (B) new loyalty program, (C) admin export for 3 enterprise customers, (D) search speed-up. How do you decide?',
+ steps:[
+  {name:'Clarify',p:'What is your first move?',o:[
+   {t:'Pick the loudest stakeholder request.',q:0,e:'Volume is not impact. Decisions should follow the goal.'},
+   {t:'Ask what this quarter must achieve, then estimate reach, impact, and effort for each request.',q:2,e:'Anchors the choice to a goal and makes the trade-offs explicit.'},
+   {t:'Start with the cheapest item.',q:1,e:'Quick wins are useful, but cost alone ignores impact.'}]},
+  {name:'Solve',p:'Which method do you use?',o:[
+   {t:'Score with RICE and state the assumptions behind each number.',q:2,e:'A transparent framework that can be challenged and refined.'},
+   {t:'Rank by gut feel and move on.',q:0,e:'Not defensible in an interview or with stakeholders.'},
+   {t:'Rank by revenue only.',q:1,e:'Revenue matters, but this ignores user pain and effort.'}]},
+  {name:'Measure',p:'What do you call out as the key risk?',o:[
+   {t:'It will be hard to plan.',q:0,e:'Vague. Name the specific risk and how you would reduce it.'},
+   {t:'Fix the checkout crash first because it loses revenue, and test loyalty with a small pilot before committing.',q:2,e:'Names a clear priority, the reason, and a way to reduce uncertainty.'},
+   {t:'There are no real risks.',q:0,e:'Interviewers expect you to name trade-offs and risks.'}]}
+ ],
+ model:'Fix the checkout crash first (high severity, low effort), then search speed (broad reach), then the enterprise export. Pilot the loyalty program before a full bet, and state the assumptions behind each score.'},
+
+{id:'ai',mod:'AI Product Sense',q:'Build an AI writing assistant for a bank\'s customer support agents. What is your approach?',
+ steps:[
+  {name:'Clarify',p:'What do you ask before designing?',o:[
+   {t:'Propose a customer-facing chatbot right away.',q:0,e:'Skips the problem. Agents may be the real user and the goal may differ.'},
+   {t:'Ask what success means (handle time, consistency, training) and how much error a regulated bank can tolerate.',q:2,e:'Sets the goal and the risk tolerance, which shape scope and guardrails.'},
+   {t:'Ask which LLM to use.',q:1,e:'Model choice matters later. The product problem comes first.'}]},
+  {name:'Solve',p:'What scope do you pick?',o:[
+   {t:'Fully automatic replies sent to customers.',q:0,e:'Too risky for regulated content without review.'},
+   {t:'Draft suggestions for agents to review, grounded in approved knowledge with citations.',q:2,e:'Gives value fast while keeping a human in the loop and the answers traceable.'},
+   {t:'Train a custom model from scratch.',q:0,e:'Expensive and slow. Retrieval over approved content is a faster start.'}]},
+  {name:'Measure',p:'How do you evaluate quality?',o:[
+   {t:'A satisfaction survey only.',q:1,e:'Useful but lagging and coarse.'},
+   {t:'An eval set of real tickets measuring accuracy and hallucination, plus handle time and suggestion acceptance, with compliance review.',q:2,e:'Offline and online metrics together, plus the safety review a bank needs.'},
+   {t:'Check that it feels right in demos.',q:0,e:'Demos hide failure cases. You need a measured eval set.'}]}
+ ],
+ model:'Clarify goal and risk tolerance, ship agent-assist drafts grounded in approved content with citations, keep a human in the loop, and measure with an eval set plus handle time and acceptance rate, then expand scope as quality holds.'},
+{id:'estimate',mod:'Estimation',q:'Estimate how many food delivery orders happen in Bengaluru on a typical weekday.',
+ steps:[
+  {name:'Clarify',p:'What do you do first?',o:[
+   {t:'Give a number immediately.',q:0,e:'A guess without structure cannot be checked or improved.'},
+   {t:'Define the scope: which hours, which order types, and what counts as an order.',q:2,e:'Scope sets the boundaries and keeps the estimate defensible.'},
+   {t:'Ask the data team for the exact figure.',q:1,e:'Useful at work, but interviews test structured reasoning.'}]},
+  {name:'Solve',p:'How do you structure the estimate?',o:[
+   {t:'Population times share who order times orders per person, adjusted for weekdays.',q:2,e:'A clear chain where each factor can be checked and challenged.'},
+   {t:'Multiply the number of restaurants by a random number.',q:0,e:'No link to demand, so the result is arbitrary.'},
+   {t:'Quote one public app statistic.',q:1,e:'Anchoring helps, but you still need to show your own reasoning.'}]},
+  {name:'Measure',p:'How do you sanity-check the result?',o:[
+   {t:'Cross-check with orders per restaurant and courier capacity.',q:2,e:'A second angle that tests whether the first estimate is plausible.'},
+   {t:'Say the answer is probably right.',q:0,e:'Confidence without a check is not a sanity check.'},
+   {t:'Discard the result if it looks large.',q:0,e:'Strong candidates explain surprises rather than throw them away.'}]}
+ ],
+ model:'Scope to weekday lunch and dinner orders. Estimate the population, the share who order delivery on a typical day, and orders per active person. Sanity-check against restaurant volume and courier capacity.'},
+{id:'behav',mod:'Behavioral',q:'Tell me about a time you disagreed with an engineering lead about priorities.',
+ steps:[
+  {name:'Situation',p:'What belongs in your opening?',o:[
+   {t:'Jump straight into what you did.',q:0,e:'Without context the listener cannot judge the trade-off you faced.'},
+   {t:'Two sentences on the product, the goal, and why the disagreement mattered.',q:2,e:'Gives the stakes in a few lines and keeps the answer focused.'},
+   {t:'A long history of the company.',q:0,e:'Too much background dilutes the story.'}]},
+  {name:'Action',p:'Which action is the strongest to describe?',o:[
+   {t:'We all agreed in the end.',q:0,e:'The word we hides your contribution. Say what you did.'},
+   {t:'I gathered usage data, met the lead one-on-one to understand the technical constraint, and proposed a phased plan.',q:2,e:'Specific, first-person, and shows both evidence and empathy.'},
+   {t:'I escalated to my director immediately.',q:1,e:'Sometimes right, but interviewers want to see you try to resolve it first.'}]},
+  {name:'Result',p:'How do you close the story?',o:[
+   {t:'It worked out fine.',q:0,e:'No outcome and no evidence. Add a measurable result.'},
+   {t:'The phased launch cut incidents by a measurable amount, and the lead and I agreed on a shared review process.',q:2,e:'A quantified result plus a lasting change in how the team works.'},
+   {t:'I was right and they were wrong.',q:0,e:'Signals ego. Focus on the shared outcome.'}]}
+ ],
+ model:'Set the stakes in two sentences, describe your first-person actions including the one-on-one and the phased plan, and close with a quantified result and a lesson about working with engineering.'},
+{id:'improve',mod:'Product Improvement',q:'How would you improve a ride-hailing app for airport trips?',
+ steps:[
+  {name:'Clarify',p:'What is your first move?',o:[
+   {t:'List features like scheduled pickups and loyalty points.',q:0,e:'Features before problems skip the diagnosis step.'},
+   {t:'Clarify the user, such as travelers or drivers, and the pain point you are solving.',q:2,e:'Anchors the improvement to a specific user and problem.'},
+   {t:'Ask which app is the main competitor.',q:1,e:'Useful context, but not enough to define the problem.'}]},
+  {name:'Solve',p:'Which problem do you prioritize?',o:[
+   {t:'Uncertain pickup times and long waits at the terminal.',q:2,e:'A frequent, high-frustration pain that is tied to the airport use case.'},
+   {t:'A new color scheme.',q:0,e:'Cosmetic, with no clear link to the core job.'},
+   {t:'Adding games during the wait.',q:1,e:'Creative, but it does not address the core frustration first.'}]},
+  {name:'Measure',p:'How do you measure the improvement?',o:[
+   {t:'Median pickup wait at airports, with on-time arrival and repeat rate as guardrails.',q:2,e:'A primary metric tied to the problem, plus guardrails against side effects.'},
+   {t:'Number of app downloads.',q:0,e:'Acquisition is not the outcome of this improvement.'},
+   {t:'Total rides per day.',q:1,e:'Related, but it can rise for reasons unrelated to the fix.'}]}
+ ],
+ model:'Define the traveler and the terminal wait pain, prioritize predictable pickup times, then measure median wait with on-time arrival and repeat rate as guardrails. Pilot at one airport before scaling.'},
+{id:'metrics2',mod:'Metrics Diagnosis (2)',q:'Signup conversion fell from 12% to 9% after a page redesign. Diagnose it.',
+ steps:[
+  {name:'Clarify',p:'What do you check first?',o:[
+   {t:'Roll back the redesign right away.',q:0,e:'Rolling back before diagnosing may hide what actually broke.'},
+   {t:'Confirm the drop is real and check whether the redesign reached everyone, whether tracking changed, and whether traffic mix shifted.',q:2,e:'Separates measurement, rollout, and traffic-mix explanations before changing anything.'},
+   {t:'Ask the design team for their reasoning.',q:1,e:'Useful input, but it is not evidence yet.'}]},
+  {name:'Solve',p:'Where do you look for the cause?',o:[
+   {t:'Compare the old and new funnel step by step, by device, channel, and new versus returning visitors.',q:2,e:'Locates which step and which segment changed.'},
+   {t:'Look only at total signups.',q:0,e:'Totals hide the step where users drop off.'},
+   {t:'Ask for more traffic.',q:0,e:'More traffic does not explain a lower conversion rate.'}]},
+  {name:'Measure',p:'Which hypothesis do you test?',o:[
+   {t:'Users dislike the new look.',q:0,e:'Not specific or testable.'},
+   {t:'The new form adds a required field on mobile, so mobile completion fell while desktop held steady.',q:2,e:'Specific, matched to a segment, and testable with a fix or a holdout test.'},
+   {t:'Competitors are converting better.',q:1,e:'Possible, but it needs segment evidence first.'}]}
+ ],
+ model:'Confirm the drop and the rollout state, compare the funnel step by step across segments, form a specific hypothesis such as a mobile form change, then verify with a targeted fix or holdout test.'},
+{id:'prio2',mod:'Prioritization (2)',q:'Your roadmap has 20 ideas and capacity for 5. How do you choose?',
+ steps:[
+  {name:'Clarify',p:'What is your first move?',o:[
+   {t:'Build the three ideas stakeholders ask for most.',q:0,e:'Volume of requests is not the same as impact.'},
+   {t:'Ask what the next two quarters must achieve and which users each idea serves.',q:2,e:'Ties the roadmap to goals and users before any scoring.'},
+   {t:'Cut the list to five at random.',q:0,e:'Random selection ignores the evidence.'}]},
+  {name:'Solve',p:'How do you score the ideas?',o:[
+   {t:'Score on impact, confidence, and effort with explicit assumptions, then check the top five against strategy.',q:2,e:'Transparent scoring plus a strategic sanity check.'},
+   {t:'Pick the ideas the CEO mentioned.',q:0,e:'Authority is an input, not evidence.'},
+   {t:'Pick the ideas with the fewest dependencies.',q:1,e:'Dependencies matter, but they should not be the main criterion.'}]},
+  {name:'Measure',p:'How do you handle what you cut?',o:[
+   {t:'Name the trade-off: what you cut, why, and when you will revisit it.',q:2,e:'Shows you understand the cost of saying no and keep the decision open.'},
+   {t:'Say everything is important.',q:0,e:'Avoids the trade-off the question asks for.'},
+   {t:'Ask the team to vote.',q:1,e:'Involving the team helps, but a vote alone is not a framework.'}]}
+ ],
+ model:'Clarify goals and users for the next two quarters, score ideas on impact, confidence, and effort with stated assumptions, check the top five against strategy, and explain what you cut and when you would revisit it.'},
+{id:'metrics3',mod:'Metrics Diagnosis (3)',q:'Marketplace GMV has been flat for two quarters while seller count grew 20%. What do you investigate?',
+ steps:[
+  {name:'Clarify',p:'What is your first move?',o:[
+   {t:'Launch a seller incentive program now.',q:0,e:'Acting before diagnosing spends budget on an unknown cause.'},
+   {t:'Break GMV into buyers, orders per buyer, and average order value, then check which one stalled.',q:2,e:'A driver tree shows where the flatness comes from before you act.'},
+   {t:'Ask sellers what is wrong.',q:1,e:'Seller feedback is useful, but it is one source. Pair it with data.'}]},
+  {name:'Solve',p:'Which cut is most useful?',o:[
+   {t:'Compare new sellers with established sellers, category by category.',q:2,e:'New listings can add volume without orders, which hides a drop in established categories.'},
+   {t:'Compare total GMV with last year.',q:0,e:'A year-over-year total does not show where growth stopped.'},
+   {t:'Count total listings.',q:1,e:'Listings are an input. Check whether they convert into orders.'}]},
+  {name:'Measure',p:'Which hypothesis do you test first?',o:[
+   {t:'Sellers are unhappy.',q:0,e:'Not testable as stated.'},
+   {t:'Established sellers in one category lost placement after a ranking change, while new listings add volume but few orders.',q:2,e:'Specific, segment-level, and testable with ranking and order data.'},
+   {t:'Buyers are spending less overall.',q:1,e:'Plausible, but it needs order-level evidence first.'}]}
+ ],
+ model:'Break GMV into buyers, orders per buyer, and order value. Cut by seller tenure and category. Test a specific hypothesis, such as a ranking change hurting established sellers, using ranking and order data.'},
+{id:'metrics4',mod:'Metrics Diagnosis (4)',q:'Day-30 retention for new users fell from 25% to 19% over the last month. What do you do?',
+ steps:[
+  {name:'Clarify',p:'What is your first move?',o:[
+   {t:'Start redesigning onboarding.',q:0,e:'A redesign before diagnosis may fix the wrong thing.'},
+   {t:'Confirm the metric definition and cohort window did not change, then compare cohorts by channel and start date.',q:2,e:'Checks for a definition or cohort artifact before blaming users.'},
+   {t:'Ask marketing whether the campaigns were good.',q:1,e:'Campaign quality matters, but first check whether the drop is real.'}]},
+  {name:'Solve',p:'How do you locate the drop?',o:[
+   {t:'Compare cohorts by acquisition channel and onboarding path.',q:2,e:'Isolates whether the drop is channel-driven or product-driven.'},
+   {t:'Look at day-30 retention for all users combined.',q:0,e:'Combined numbers hide the cohort that changed.'},
+   {t:'Compare with a competitor benchmark.',q:1,e:'Context helps, but it cannot locate the cause in your product.'}]},
+  {name:'Measure',p:'Which hypothesis do you test?',o:[
+   {t:'New users are less interested than before.',q:0,e:'Vague and untestable.'},
+   {t:'A paid campaign started last month brought low-intent users who churn at higher rates in week two.',q:2,e:'Specific, tied to a cohort, and testable with channel-level retention curves.'},
+   {t:'The app got slower.',q:1,e:'Possible, but check performance data and cohort timing first.'}]}
+ ],
+ model:'Verify the metric and cohort definitions, then compare cohorts by channel and onboarding path. Test a specific hypothesis, such as a paid campaign bringing low-intent users, and reallocate spend before redesigning.'},
+{id:'prio3',mod:'Prioritization (3)',q:'Engineering says a platform migration will slow feature work for two quarters. How do you decide whether to do it?',
+ steps:[
+  {name:'Clarify',p:'What is your first move?',o:[
+   {t:'Approve it because engineering asked.',q:0,e:'Deciding by who asked skips the trade-off.'},
+   {t:'Ask what breaks if we wait, what delayed features cost, and what the migration unlocks.',q:2,e:'Frames the decision as cost of delay versus cost of change.'},
+   {t:'Reject it to protect the roadmap.',q:0,e:'Rejecting without analysis ignores long-term risk.'}]},
+  {name:'Solve',p:'How do you evaluate the option?',o:[
+   {t:'Estimate the cost of delay and the benefit of migration with stated assumptions, and test whether a phased migration captures most of the benefit.',q:2,e:'Makes the trade-off quantitative and explores a middle path.'},
+   {t:'Ask the CEO to decide.',q:0,e:'Escalating without a recommendation is not a decision.'},
+   {t:'Do it only after all features ship.',q:1,e:'Reasonable sequencing, but it may never happen.'}]},
+  {name:'Measure',p:'How do you protect the decision?',o:[
+   {t:'Avoid it because it is risky.',q:0,e:'Risk without a mitigation plan is not a recommendation.'},
+   {t:'Commit to a phased migration with a checkpoint: if feature velocity drops past an agreed threshold, pause and re-evaluate.',q:2,e:'A plan with a guardrail and a clear decision point.'},
+   {t:'Commit fully and see what happens.',q:0,e:'Without a guardrail there is no way to correct course.'}]}
+ ],
+ model:'Frame the choice as cost of delay versus cost of change, estimate both with stated assumptions, prefer a phased migration, and set a checkpoint with a velocity threshold that triggers a re-evaluation.'},
+{id:'prio4',mod:'Prioritization (4)',q:'Two enterprise customers want opposite changes to the same dashboard. How do you decide?',
+ steps:[
+  {name:'Clarify',p:'What is your first move?',o:[
+   {t:'Build what the larger customer asks for.',q:1,e:'Revenue matters, but one customer should not decide by default without checking the broader need.'},
+   {t:'Ask what job each customer is trying to do, and whether the difference is in the goal or only in the layout.',q:2,e:'Often the goal is shared and a configuration option can serve both.'},
+   {t:'Tell both to pick one.',q:0,e:'Pushing the decision back to customers skips your role.'}]},
+  {name:'Solve',p:'What option do you look for?',o:[
+   {t:'A configurable setting that serves both jobs.',q:2,e:'Resolves the conflict without choosing a winner, if the cost is reasonable.'},
+   {t:'Build two separate versions.',q:0,e:'Duplicate maintenance creates long-term cost.'},
+   {t:'Drop the request from the roadmap.',q:0,e:'Dismissing paying customers without analysis damages trust.'}]},
+  {name:'Measure',p:'How do you close the loop?',o:[
+   {t:'Say you will decide later.',q:0,e:'Avoids the decision the question asks for.'},
+   {t:'Recommend the configurable option, check its cost against revenue at stake, and tell both customers the trade-off and timeline.',q:2,e:'A recommendation, a cost check, and clear communication.'},
+   {t:'Choose the bigger customer and move on.',q:1,e:'Possibly right, but explain the reasoning and the impact on the other customer.'}]}
+ ],
+ model:'Find the underlying job for each customer, check whether a configurable option serves both, estimate its cost against revenue at stake, recommend it, and tell both customers the trade-off and timeline.'},
+{id:'design2',mod:'Product Design (2)',q:'Design a feature that helps older adults make video calls to their grandchildren more easily.',
+ steps:[
+  {name:'Clarify',p:'What do you do first?',o:[
+   {t:'Propose a tablet app with large buttons and AI assistance.',q:0,e:'A solution before the problem skips framing. The assumptions about users are untested.'},
+   {t:'Clarify who the users are, their devices and abilities, and what a successful call looks like for them.',q:2,e:'Sets the user, context, and success criteria before any design choice.'},
+   {t:'Ask the company for its budget.',q:1,e:'Constraints matter, but the user comes first.'}]},
+  {name:'Solve',p:'Which problem should the first version solve?',o:[
+   {t:'Starting a call takes too many steps and often fails for this group.',q:2,e:'A specific, frequent pain that a narrow first version can address.'},
+   {t:'Adding filters and effects to the video.',q:0,e:'Nice to have, and not the core pain of making the call.'},
+   {t:'Social features for the whole family network.',q:1,e:'A valid expansion, but it widens scope before the core works.'}]},
+  {name:'Measure',p:'How do you measure success?',o:[
+   {t:'Number of features shipped.',q:0,e:'An output metric. It does not show user value.'},
+   {t:'Share of scheduled calls started without help, with call-quality complaints as a guardrail.',q:2,e:'An outcome metric paired with a guardrail.'},
+   {t:'App store rating.',q:1,e:'A useful signal, but too coarse to show whether the core job got easier.'}]}
+ ],
+ model:'Clarify the user group, their devices and abilities, and what success means. Solve the connection friction with a narrow first version, such as one-tap calling from a shared contact. Measure unassisted calls started per week, with call quality as a guardrail.'},
+{id:'design3',mod:'Product Design (3)',q:'Design the onboarding for a budgeting app where most new users leave during the first session.',
+ steps:[
+  {name:'Clarify',p:'What is your first move?',o:[
+   {t:'Add a tutorial with twelve screens.',q:0,e:'A solution before diagnosing where users leave.'},
+   {t:'Ask where users drop off in the first session and what they came to do.',q:2,e:'Finds the specific step and user intent that onboarding must serve.'},
+   {t:'Compare with a competitor onboarding.',q:1,e:'A helpful reference, but it cannot show where your users leave.'}]},
+  {name:'Solve',p:'What change do you make?',o:[
+   {t:'Let users link one account and see a useful summary in the first session.',q:2,e:'Gets to the first moment of value quickly, which is what keeps people.'},
+   {t:'Require full setup of every budget category before use.',q:0,e:'Adds friction at the exact point users leave.'},
+   {t:'Offer a premium trial first.',q:1,e:'Could work, but it does not address why first-session users leave.'}]},
+  {name:'Measure',p:'How do you measure the change?',o:[
+   {t:'Total signups.',q:0,e:'Signups do not show whether people reached value.'},
+   {t:'Share of new users who reach first value in session one, plus day-7 return, with linking failures as a guardrail.',q:2,e:'An activation metric paired with retention and a risk check.'},
+   {t:'Time spent in onboarding.',q:1,e:'More time could mean success or confusion, so it is ambiguous alone.'}]}
+ ],
+ model:'Diagnose the drop-off step, shorten the path to first value by letting users link one account and see a summary, then measure first-session activation and day-7 return, with linking failures as a guardrail.'},
+{id:'behav2',mod:'Behavioral (2)',q:'Tell me about a time you made a decision with incomplete data.',
+ steps:[
+  {name:'Situation',p:'What belongs in your opening?',o:[
+   {t:'It was a hard project.',q:0,e:'No stakes or context. The listener cannot judge the decision.'},
+   {t:'Two sentences on the situation, what data was missing, and the deadline or cost of waiting.',q:2,e:'Gives the constraint and the stakes that make the decision meaningful.'},
+   {t:'The full history of the product since launch.',q:0,e:'Too much background hides the decision.'}]},
+  {name:'Action',p:'Which action is strongest to describe?',o:[
+   {t:'I waited until we had complete data.',q:0,e:'Waiting may be the wrong call and does not show judgment.'},
+   {t:'I listed the assumptions, sized the risk of each, ran a small test on the riskiest one, then made a call with a review date.',q:2,e:'Shows structured judgment under uncertainty and a way to correct course.'},
+   {t:'I asked my manager to decide.',q:1,e:'Sometimes appropriate, but interviewers want to see your own reasoning first.'}]},
+  {name:'Result',p:'How do you close the story?',o:[
+   {t:'It went well.',q:0,e:'No evidence. Add a measurable result.'},
+   {t:'The test confirmed the main assumption within two weeks, and the launch lifted the metric by a measured amount.',q:2,e:'A measured outcome, which is what interviewers look for.'},
+   {t:'We were lucky.',q:0,e:'Undercuts your judgment. Explain what you controlled.'}]}
+ ],
+ model:'Set the constraint and stakes in two sentences, describe the assumptions you listed and the small test you ran, and close with a measured result and what you changed afterward.'},
+{id:'behav3',mod:'Behavioral (3)',q:'Tell me about a time you influenced a team without formal authority.',
+ steps:[
+  {name:'Situation',p:'What belongs in your opening?',o:[
+   {t:'I was a junior team member.',q:1,e:'Fine as context, but add the goal and the stakes.'},
+   {t:'Two sentences on the goal, why you lacked authority, and who needed to change their approach.',q:2,e:'Makes the influence challenge clear.'},
+   {t:'Describe everyone involved in the company.',q:0,e:'Loses focus on the influence challenge.'}]},
+  {name:'Action',p:'Which action is strongest to describe?',o:[
+   {t:'I told them they had to do it.',q:0,e:'Authority you do not have does not persuade people.'},
+   {t:'I built a prototype with real data, shared it with each stakeholder, and adjusted it based on their concerns before the review.',q:2,e:'Evidence, individual engagement, and responsiveness to concerns.'},
+   {t:'I sent a long email explaining my plan.',q:1,e:'Communication matters, but a plan without involvement rarely earns buy-in.'}]},
+  {name:'Result',p:'How do you close the story?',o:[
+   {t:'They eventually agreed.',q:0,e:'Vague. Add what changed and by how much.'},
+   {t:'Three teams adopted the approach within a month, and cycle time fell by a measured amount.',q:2,e:'Adoption plus a measured result.'},
+   {t:'It did not matter in the end.',q:0,e:'Undermines the story. Explain what you learned instead.'}]}
+ ],
+ model:'Name the goal and why you lacked authority, describe building evidence and engaging each stakeholder with a prototype, and close with adoption, a measured result, and what you learned about influence.'},
+{id:'ai2',mod:'AI Product Sense (2)',q:'Design an AI feature that summarizes long customer reviews for shoppers.',
+ steps:[
+  {name:'Clarify',p:'What do you ask first?',o:[
+   {t:'Summarize every review with the largest model available.',q:0,e:'Skips what shoppers need and how a wrong summary affects them.'},
+   {t:'Ask what decision shoppers make from reviews and what a wrong summary would cost them.',q:2,e:'Ties the feature to the decision and the cost of error.'},
+   {t:'Ask which summarization model is cheapest.',q:1,e:'Cost matters, but product value and error risk come first.'}]},
+  {name:'Solve',p:'What do you show?',o:[
+   {t:'A summary with the review count, sentiment split, and links to representative reviews.',q:2,e:'Grounded and checkable, so shoppers can verify the source.'},
+   {t:'A single generated verdict that replaces the reviews.',q:0,e:'Hides the evidence and invites trust without verification.'},
+   {t:'Summaries only for products with over 1,000 reviews.',q:1,e:'Reasonable for quality, but it leaves most products without help.'}]},
+  {name:'Measure',p:'How do you evaluate it?',o:[
+   {t:'Time spent on the product page.',q:1,e:'Could rise for reasons unrelated to quality.'},
+   {t:'Accuracy on labeled reviews, source click-through, return-rate change, and a flag rate for misleading summaries.',q:2,e:'Quality measured offline and online, plus a trust and harm check.'},
+   {t:'Number of summaries generated.',q:0,e:'Output volume says nothing about quality.'}]}
+ ],
+ model:'Clarify the shopping decision and the cost of error, show grounded summaries with links to source reviews, then measure accuracy on labeled reviews, source click-through, return rate, and a flag rate for misleading summaries.'},
+{id:'improve2',mod:'Product Improvement (2)',q:'How would you improve a food delivery app for office lunch orders?',
+ steps:[
+  {name:'Clarify',p:'What is your first move?',o:[
+   {t:'Add group ordering features.',q:0,e:'A feature before the problem skips the diagnosis.'},
+   {t:'Clarify the user, such as the office coordinator, and the pain of collecting orders before the deadline.',q:2,e:'Anchors the improvement to a specific job and a real pain.'},
+   {t:'Ask which competitor has the best app.',q:1,e:'Useful context, but it is not a problem definition.'}]},
+  {name:'Solve',p:'Which problem do you prioritize?',o:[
+   {t:'Late collection of individual orders and mistakes that cause rework.',q:2,e:'A frequent, costly pain tied to the lunch job.'},
+   {t:'A new app icon and color theme.',q:0,e:'Cosmetic, with no link to the job.'},
+   {t:'Loyalty points for dinner orders.',q:1,e:'Possibly valuable, but it does not address the lunch pain.'}]},
+  {name:'Measure',p:'How do you measure the improvement?',o:[
+   {t:'Total orders per month.',q:0,e:'Volume does not show that the lunch job got easier.'},
+   {t:'Share of group orders completed by the deadline, with order error rate and repeat use by offices.',q:2,e:'Outcome, error, and adoption measures tied to the pain.'},
+   {t:'Average session length.',q:1,e:'Ambiguous, since a longer session may mean more friction.'}]}
+ ],
+ model:'Define the office coordinator and the deadline pain, prioritize a shared order form with a deadline and fewer errors, then measure on-time group completion, order error rate, and repeat use.'},
+{id:'estimate2',mod:'Estimation (2)',q:'Estimate how many smartphones are sold in India in one year.',
+ steps:[
+  {name:'Clarify',p:'What do you do first?',o:[
+   {t:'State a number from memory.',q:0,e:'Unstructured, so there is no way to check it.'},
+   {t:'Define what counts as a sale, such as new devices only or refurbished too, and the year you mean.',q:2,e:'A clear scope makes the estimate defensible.'},
+   {t:'Ask whether the interviewer wants a rough or exact answer.',q:1,e:'A reasonable question, but you still choose the scope yourself.'}]},
+  {name:'Solve',p:'How do you structure it?',o:[
+   {t:'Adult population times smartphone penetration times annual replacement rate.',q:2,e:'A chain of factors that can be challenged one at a time.'},
+   {t:'Number of stores times average sales per store.',q:1,e:'Workable, but store counts and averages are harder to justify.'},
+   {t:'Use the first number that comes to mind.',q:0,e:'That is a guess, not reasoning.'}]},
+  {name:'Measure',p:'How do you sanity-check it?',o:[
+   {t:'Compare with published shipment figures and the implied sales per store.',q:2,e:'Checks the estimate from an independent angle.'},
+   {t:'Say the answer feels right.',q:0,e:'A feeling is not a sanity check.'},
+   {t:'Skip the check because it takes time.',q:0,e:'Skipping checks is a common reason estimates fail.'}]}
+ ],
+ model:'Scope to new smartphones sold in one year, estimate adult population times penetration times replacement rate, then cross-check against published shipment figures and sales per store.'},
+{id:'metrics5',mod:'Metrics Diagnosis',q:'Your app store rating dropped from 4.6 to 4.1 in two weeks. How do you investigate?',
+ steps:[
+  {name:'Clarify',p:'What do you check first?',o:[
+   {t:'Reply to every negative review with an apology.',q:0,e:'Replies help, but they do not tell you what changed.'},
+   {t:'Line up the drop against release dates and external events, and check whether review volume or mix changed.',q:2,e:'Aligns the drop with changes before forming any theory.'},
+   {t:'Ask the support team for their view.',q:1,e:'Useful input, but check it against the timeline first.'}]},
+  {name:'Solve',p:'How do you segment the reviews?',o:[
+   {t:'Group by app version, device, country, and the themes in the review text.',q:2,e:'Shows whether one release or one platform drives the complaints.'},
+   {t:'Read the five most recent reviews.',q:0,e:'Five reviews are anecdotes, not a segment.'},
+   {t:'Compare with a competitor rating.',q:1,e:'Context helps, but it does not locate the cause in your product.'}]},
+  {name:'Measure',p:'Which hypothesis do you test first?',o:[
+   {t:'Users are less satisfied overall.',q:0,e:'Too broad to test.'},
+   {t:'Version 4.8 crashes on one Android model during checkout, and most new one-star reviews mention checkout.',q:2,e:'Specific, segment-matched, and testable with crash logs.'},
+   {t:'Competitors launched new features.',q:1,e:'Possible, but it needs evidence from the segments first.'}]}
+ ],
+ model:'Align the drop with release and external timelines, segment reviews by version, device, and country, then test a specific hypothesis such as a crash in one release, using crash logs and review themes before choosing a fix.'},
+{id:'metrics6',mod:'Metrics Diagnosis',q:'Average order value fell 12% after you added a free-shipping threshold. Was it a success?',
+ steps:[
+  {name:'Clarify',p:'What do you define before judging?',o:[
+   {t:'Whether average order value went down, since that is the headline.',q:0,e:'One metric can mislead without the economics around it.'},
+   {t:'The business goal, such as profit per customer and repeat purchase, and the metrics that define success for both.',q:2,e:'Frames success around the goal, not a single number.'},
+   {t:'Whether leadership likes the change.',q:1,e:'Stakeholder support matters, but it is not a success criterion.'}]},
+  {name:'Solve',p:'How do you evaluate the trade-off?',o:[
+   {t:'Compare orders per customer and margin per order before and after, with a control group where possible.',q:2,e:'Captures whether more orders offset the smaller baskets.'},
+   {t:'Ignore it because the drop is small.',q:0,e:'Small changes can still matter at scale.'},
+   {t:'Compare total revenue with last year only.',q:1,e:'Revenue alone hides margin and frequency effects.'}]},
+  {name:'Measure',p:'What would make you call it a success?',o:[
+   {t:'Average order value recovers.',q:0,e:'That is the metric that fell, not the goal.'},
+   {t:'Profit per customer rises and order frequency holds, tested against a control group.',q:2,e:'Defines success in economic terms and checks for side effects.'},
+   {t:'Total orders go up.',q:1,e:'More orders can still hurt margin, so pair it with profit.'}]}
+ ],
+ model:'Define success as profit per customer with repeat purchase, compare orders per customer and margin against a control group, and judge the threshold on whether the combined economics improve.'},
+{id:'metrics7',mod:'Metrics Diagnosis',q:'Weekly active users are up 15%, but session length is down 20%. Is this good news?',
+ steps:[
+  {name:'Clarify',p:'What is your first move?',o:[
+   {t:'Celebrate the user growth and report it upward.',q:0,e:'Growth without context may hide a worse experience.'},
+   {t:'Ask what each session is for and whether shorter sessions mean faster task completion or abandoned tasks.',q:2,e:'Shorter sessions can be a win or a failure, depending on the job.'},
+   {t:'Ask the data team to recheck the numbers.',q:1,e:'Worth doing, but the question is about meaning as well as accuracy.'}]},
+  {name:'Solve',p:'How do you test which story is true?',o:[
+   {t:'Compare task completion rate and return frequency for the shorter sessions.',q:2,e:'Separates efficient sessions from sessions that end in frustration.'},
+   {t:'Look only at total session count.',q:0,e:'Counts do not show whether the sessions were useful.'},
+   {t:'Compare with a competitor app.',q:1,e:'Context helps, but it does not show your users outcomes.'}]},
+  {name:'Measure',p:'Which result would convince you it is a real win?',o:[
+   {t:'Users are returning more often and completing their core task in fewer steps.',q:2,e:'Shows the shorter session reflects efficiency, not abandonment.'},
+   {t:'Users stay on the app longer.',q:0,e:'Longer sessions were the old metric, and they fell.'},
+   {t:'More users install the app.',q:0,e:'Installs do not show the experience improved.'}]}
+ ],
+ model:'Check what the sessions are for. If task completion and return rates hold or rise with shorter sessions, it is efficiency. If they fall, users are abandoning tasks, which is a problem even as active users grow.'},
+{id:'prio5',mod:'Prioritization',q:'One sprint remains before a major launch. Two bugs: a rare data-loss bug and a visible UI glitch. Which do you fix?',
+ steps:[
+  {name:'Clarify',p:'What is your first question?',o:[
+   {t:'Which one looks worse on screen?',q:0,e:'Visibility is not severity.'},
+   {t:'How often each occurs, how many users it affects, and what it costs in data or trust.',q:2,e:'Severity and reach decide the order.'},
+   {t:'Which engineer is free?',q:0,e:'Staffing is an execution detail, not the priority question.'}]},
+  {name:'Solve',p:'How do you decide?',o:[
+   {t:'Fix the data-loss bug first because it is severe and irreversible, and ship the UI glitch with a documented known issue.',q:2,e:'Irreversible harm outranks cosmetic issues, and the trade-off is explicit.'},
+   {t:'Fix the UI glitch because the launch demo will show it.',q:0,e:'Optimizing for the demo instead of users.'},
+   {t:'Split the sprint evenly.',q:1,e:'Fair, but it risks finishing neither in time.'}]},
+  {name:'Measure',p:'How do you communicate the decision?',o:[
+   {t:'Name the data-loss fix as the blocker and the UI issue as a known risk, with an owner and a date.',q:2,e:'A clear decision, a named risk, and accountability.'},
+   {t:'Say nothing about the UI glitch.',q:0,e:'Hiding known issues damages trust when they surface.'},
+   {t:'Ask leadership to decide.',q:1,e:'Escalation is fine, but come with a recommendation.'}]}
+ ],
+ model:'Rank by severity and reach, fix the irreversible data-loss bug first, ship with the UI glitch documented with an owner and date, and communicate the trade-off clearly to stakeholders.'},
+{id:'prio6',mod:'Prioritization',q:'Sales asks for a custom report for one prospect that could close a large deal. Your team is focused on self-serve growth. What do you do?',
+ steps:[
+  {name:'Clarify',p:'What is your first move?',o:[
+   {t:'Build it because the deal is large.',q:0,e:'One deal does not settle the priority without checking the broader need.'},
+   {t:'Ask whether other customers share the need, and what the deal is worth to the business.',q:2,e:'Tests whether this is a pattern and whether the value justifies the cost.'},
+   {t:'Decline to protect the roadmap.',q:0,e:'Refusing without analysis damages the sales relationship.'}]},
+  {name:'Solve',p:'What option do you offer?',o:[
+   {t:'A scoped version built from existing reports, and a test of whether other prospects want it.',q:2,e:'Gets the prospect what they need cheaply and tests demand.'},
+   {t:'A fully custom system for this prospect.',q:0,e:'Creates maintenance cost without evidence of wider demand.'},
+   {t:'Ask the prospect to wait a year.',q:1,e:'Protects focus, but may lose the deal without a middle option.'}]},
+  {name:'Measure',p:'How do you close the loop?',o:[
+   {t:'Recommend the scoped option, check its cost against the deal value, and set a checkpoint on whether other customers adopt it.',q:2,e:'A recommendation, a cost check, and a way to revisit the decision.'},
+   {t:'Call the request a distraction.',q:0,e:'Dismissive, and it ignores the revenue at stake.'},
+   {t:'Build it and move on.',q:1,e:'Reasonable for the deal, but it skips the cost and the learning.'}]}
+ ],
+ model:'Check whether the request reflects a broader need and what the deal is worth, offer a scoped solution with existing tools, estimate its cost against the deal value, and set a checkpoint to see whether other customers adopt it.'}
+];
+
+const STAR_FIELDS=[['S','Situation: the context in one or two sentences.'],['T','Task: your specific responsibility.'],['A','Action: what YOU did, step by step.'],['R','Result: a measurable outcome.'],['I','Impact: what changed afterward, and what you learned.']];
+
+let D=load();
+let run=null;     // {qi, si, fb, ans:[], left, timer}
+let view='home', timed=false, focusNext=false;
+
+function load(){try{const v=JSON.parse(localStorage.getItem(KEY));return v&&v.q?v:{q:{},stars:[]};}catch(e){return {q:{},stars:[]};}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(D));}catch(e){}}
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pct=(sum,steps)=>Math.round(sum/(steps*2)*100);
+function announce(m){document.querySelector('[role=status]').textContent=m;}
+
+function go(v){
+  stopTimer(); view=v; run=run&&view==='drill'?run:null;
+  ['home','star','data'].forEach(n=>{const el=document.getElementById('n-'+n);el.classList.toggle('on',n===v);if(n===v)el.setAttribute('aria-current','page');else el.removeAttribute('aria-current');});
+  focusNext=true;
+  render();window.scrollTo({top:0});
+}
+
+function render(){
+  const app=document.getElementById('app');
+  app.innerHTML = view==='home'?homeView(): view==='drill'?drillView(): view==='star'?starView(): view==='mock'?mockView(): dataView();
+  if(view==='home'||view==='drill'){}
+  if(view==='drill'&&timed&&run&&run.fb===null&&run.ans.length<BANK[run.qi].steps.length) startTimer();
+  if(view==='home')document.getElementById('n-home').classList.add('on');
+  if(focusNext){focusNext=false;const h=app.querySelector('h2,h1');if(h){h.setAttribute('tabindex','-1');h.focus();}}
+}
+
+/* ---- Dashboard: readiness, review queue, modules ---- */
+function homeView(){
+  const attempted=BANK.filter(b=>D.q[b.id]);
+  const readiness=attempted.length?Math.round(attempted.reduce((a,b)=>a+D.q[b.id].last,0)/attempted.length):0;
+  const now=Date.now();
+  const due=BANK.filter(b=>!D.q[b.id]||D.q[b.id].due<=now);
+  const base=m=>m.replace(/ \(\d\)$/,'');
+  const domains=[...new Set(BANK.map(b=>base(b.mod)))];
+  const nowD=Date.now();
+  const mods=domains.map(dn=>{
+    const qs=BANK.map((b,i)=>({b,i})).filter(x=>base(x.b.mod)===dn);
+    const done=qs.filter(x=>D.q[x.b.id]);
+    const ready=done.length?Math.round(done.reduce((a,x)=>a+D.q[x.b.id].last,0)/done.length):0;
+    const nextQ=qs.find(x=>!D.q[x.b.id]||D.q[x.b.id].due<=nowD)||qs[0];
+    return `<div class="mod"><div><div class="score"><span aria-hidden="true">${icon(dn)}</span> ${esc(dn)}</div><div class="muted">${qs.length} questions · ${done.length} attempted · readiness ${ready}%</div><div class="bar"><i style="width:${ready}%"></i></div><div class="muted">Questions in this domain are sequenced automatically.</div></div><button class="btn cyan" onclick="startDrill(${nextQ.i})" aria-label="${done.length?'Continue':'Start'} ${esc(dn)}">${done.length?'Continue':'Start'}</button></div>`;
+  }).join('');
+  const weak=Object.entries(D.q).filter(([,r])=>r.misses&&r.misses.length).map(([id])=>BANK.find(b=>b.id===id)).filter(Boolean);
+  const weakTxt=weak.length?weak.map(b=>{const r=D.q[b.id];return `${esc(b.mod)}: review ${r.misses.map(n=>esc(b.steps[n].name)).join(', ')}`;}).join(' · '):'No weak steps logged yet.';
+  return `
+  <div class="panel">
+    <svg class="hero" viewBox="0 0 64 64" width="72" height="72" aria-hidden="true" focusable="false"><circle cx="32" cy="32" r="28" fill="none" stroke="#ff3d9a" stroke-width="6"/><circle cx="32" cy="32" r="17" fill="none" stroke="#22e4ff" stroke-width="6"/><circle cx="32" cy="32" r="6" fill="#ffd23f"/><path d="M32 32 L56 8" stroke="#ffd23f" stroke-width="3" stroke-linecap="round"/></svg>
+    <div class="kicker">Readiness</div>
+    <h2>${readiness}% across ${attempted.length}/${BANK.length} modules</h2>
+    <div class="bar"><i style="width:${readiness}%"></i></div>
+    <p class="muted">Scores come from step-by-step rubric choices, not from picking the highest number. Due for review: ${due.length ? due.map(b=>esc(b.mod)).join(', ') : 'nothing, nice work'}.</p>
+    <div class="row"><label class="check"><input type="checkbox" style="width:auto;margin-right:6px" ${timed?'checked':''} onchange="timed=this.checked"> Timed mode (60s per step)</label></div>
+  </div>
+  <div class="panel"><div class="kicker">Modules</div>${mods}</div>
+  <div class="panel"><div class="kicker">Review queue</div><p class="muted">${weakTxt}</p>
+    ${due.length?`<div class="row"><button class="btn" onclick="startDrill(${BANK.indexOf(due[0])})">Practice next due: ${esc(due[0].mod)}</button></div>`:''}</div>`;
+}
+
+/* ---- Drill: step-by-step scoring with explanations ---- */
+function startDrill(qi){
+  run={qi,si:0,fb:null,ans:[],left:60,timer:null};
+  view='drill';render();window.scrollTo({top:0});
+}
+
+function drillView(){
+  const b=BANK[run.qi];
+  if(run.fb===null&&run.ans.length>=b.steps.length) return resultView(b);
+  const st=b.steps[run.si];
+  const picked=run.fb;
+  const bestOpt=st.o.reduce((m,o,i)=>o.q>st.o[m].q?i:m,0);
+  const timeout=picked===-1?`<div class="feedback"><b>Time's up.</b> Strongest option: ${esc(st.o[bestOpt].t)}<br>${esc(st.o[bestOpt].e)}</div>`:'';
+  const opts=st.o.map((o,i)=>{
+    const tag=TAGS.find(t=>t.q===o.q);
+    const shown=picked!==null;
+    return `<button class="opt ${shown&&i===picked?'chosen':''}" ${shown?'disabled':''} onclick="answer(${i})">${esc(o.t)}
+      ${shown&&i===picked?`<div style="margin-top:10px"><span class="tag ${tag.c}">${tag.t}</span><div class="feedback">${esc(o.e)}</div></div>`:''}</button>`;
+  }).join('');
+  const timerHtml=timed&&picked===null?`<span class="timer" aria-live="off">⏱ ${run.left}s</span>`:'';
+  const next=picked!==null?`<div class="row"><button class="btn" onclick="nextStep()">${run.si<b.steps.length-1?'Next step':'See scorecard'} →</button></div>`:'';
+  return `<div class="panel">
+    <div class="row" style="justify-content:space-between;margin-top:0"><div class="kicker" style="margin:0">${esc(b.mod)} · Step ${run.si+1}/${b.steps.length}: ${esc(st.name)}</div>${timerHtml}</div>
+    <h2 style="margin-top:10px">${esc(b.q)}</h2>
+    <p class="muted">${esc(st.p)}</p>
+    <div role="group" aria-label="${esc(st.p)}">${opts}</div>${timeout}${next}
+    <div class="row"><button class="nav" onclick="go('home')">Exit drill</button></div>
+  </div>`;
+}
+
+function answer(i){
+  if(run.fb!==null)return;
+  stopTimer();
+  const o=BANK[run.qi].steps[run.si].o[i];
+  run.fb=i; run.ans.push(o.q); focusNext=true;
+  announce(TAGS.find(t=>t.q===o.q).t+'. '+o.e);
+  render();
+}
+
+function nextStep(){
+  run.si++; run.fb=null; focusNext=true;
+  if(run.si>=BANK[run.qi].steps.length){ finish(); }
+  run.left=60;
+  render();
+}
+
+function startTimer(){
+  stopTimer(); run.left=60;
+  run.timer=setInterval(()=>{
+    run.left--;
+    const el=document.querySelector('.timer');
+    if(el)el.textContent='⏱ '+run.left+'s';
+    if(run.left<=0){stopTimer();run.fb=-1;run.ans.push(0);announce("Time's up. Counted as weak.");render();}
+  },1000);
+}
+function stopTimer(){if(run&&run.timer){clearInterval(run.timer);run.timer=null;}}
+
+function finish(){
+  const b=BANK[run.qi];
+  const sum=run.ans.reduce((a,c)=>a+c,0);
+  const score=pct(sum,b.steps.length);
+  const prev=D.q[b.id]||{best:0,tries:0};
+  const misses=run.ans.map((q,n)=>q<2?n:-1).filter(n=>n>=0);
+  const days=score>=80?Math.max(1,Math.round((prev.interval||1)*2.5)):1;
+  D.q[b.id]={last:score,best:Math.max(prev.best,score),tries:prev.tries+1,misses,interval:days,due:Date.now()+days*864e5};
+  if(score>=80)celebrate();
+  save();
+}
+
+function nextInDomain(qi){
+  const dn=BANK[qi].mod.replace(/ \(\d\)$/,'');
+  const ids=BANK.map((b,i)=>i).filter(i=>b_base(BANK[i].mod)===dn);
+  startDrill(ids[(ids.indexOf(qi)+1)%ids.length]);
+}
+function b_base(m){return m.replace(/ \(\d\)$/,'');}
+function resultView(b){
+  const r=D.q[b.id]||{best:0,tries:0};
+  const sum=run.ans.reduce((a,c)=>a+c,0);
+  const score=pct(sum,b.steps.length);
+  const rows=b.steps.map((st,n)=>{const q=run.ans[n];const t=TAGS.find(x=>x.q===q)||TAGS[2];return `<div class="check ${q>=2?'ok':'todo'}">✔ ${esc(st.name)}: <b>${t.t}</b> ${q<2?'· review this step':''}</div>`;}).join('');
+  const band=score>=80?'Interview-ready on this skill':score>=60?'Close. Tighten the weak steps':'Keep practicing this framework';
+  return `<div class="panel">
+    <div class="kicker">Scorecard</div>
+    <h2>${score}% · ${esc(band)}</h2>
+    <div class="bar"><i style="width:${score}%"></i></div>
+    <p class="muted">Best ${r.best}% · ${r.tries} attempt${r.tries>1?'s':''}</p>
+    ${rows}
+    <div class="feedback" style="margin-top:14px"><b>Model answer:</b> ${esc(b.model)}</div>
+    <div class="panel" style="background:#0c0a22;margin-top:14px"><div class="kicker">Free-text round · AI rubric</div>
+      <label for="free">Answer the question in 4 to 6 sentences, then score it.</label>
+      <textarea id="free" style="min-height:120px"></textarea>
+      <div class="row"><button class="btn cyan" id="aiBtn" onclick="scoreFree(${run.qi})">Score with AI</button></div>
+      <div id="aiOut" aria-live="polite"></div></div>
+    <div class="row"><button class="btn" onclick="startDrill(${run.qi})">Try again</button><button class="btn cyan" onclick="nextInDomain(${run.qi})">Next question →</button><button class="btn ghost" onclick="go('home')">Dashboard</button></div>
+  </div>`;
+}
+
+const RUBRIC=['Clarifies the goal and the user','Structures the answer clearly','Makes a clear recommendation','Defines metrics or success criteria','Names trade-offs and risks'];
+async function scoreFree(qi){
+  const b=BANK[qi], text=document.getElementById('free').value.trim(), out=document.getElementById('aiOut'), btn=document.getElementById('aiBtn');
+  if(text.length<40){out.textContent='Write a few full sentences before scoring.';return;}
+  btn.disabled=true; out.textContent='Scoring...';
+  const prompt='Question: '+b.q+'\nReference model answer (for calibration, not the only valid answer): '+b.model+'\nCandidate answer: '+text+'\nScoring anchors: 2 means the criterion is addressed explicitly with specifics. 1 means it is mentioned but vague. 0 means it is absent. Score each criterion 0 (missing), 1 (partial), or 2 (strong), in this order: '+RUBRIC.join('; ')+'. Then write 2 to 3 sentences of constructive feedback and one thing to improve.\nRespond with ONLY a JSON object: {"scores":[five integers],"feedback":"string","improve":"string"}. No preamble and no markdown.';
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const data=await r.json();
+    const j=JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
+    const vals=RUBRIC.map((_,i)=>Math.max(0,Math.min(2,Number(j.scores[i])||0)));
+    const total=vals.reduce((a,v)=>a+v,0);
+    const rows=RUBRIC.map((c,i)=>{const v=vals[i];return `<div class="check ${v===2?'ok':'todo'}">${v===2?'✔':v===1?'◐':'○'} ${esc(c)}: ${v}/2</div>`;}).join('');
+    out.innerHTML=`<div class="feedback"><b>AI score: ${Math.round(total*10)}%</b></div>${rows}<div class="feedback">${esc(j.feedback)}<br><b>Improve:</b> ${esc(j.improve)}</div>`;
+    announce('AI feedback ready.');
+  }catch(e){out.textContent='AI feedback is unavailable right now. Your multiple-choice score still counts.';}
+  btn.disabled=false;
+}
+
+/* ---- STAR story bank with a self-check ---- */
+function starView(){
+  const fields=STAR_FIELDS.map(([k,h])=>`<label for="s${k}">${esc(h)}</label><textarea id="s${k}" placeholder="Write it out"></textarea>`).join('');
+  const list=D.stars.length?D.stars.map((s,i)=>`<div class="story"><b>${esc(s.title)}</b> <span class="muted">${esc(s.when)}</span><div class="muted">${checks(s).map(c=>`<div class="check ${c.ok?'ok':'todo'}">${c.ok?'✔':'○'} ${esc(c.t)}</div>`).join('')}</div><button class="nav" onclick="delStory(${i})">Delete</button></div>`).join(''):'<p class="muted">No stories yet. Aim for 6 to 8 covering leadership, conflict, failure, ambiguity, and influence without authority.</p>';
+  return `<div class="panel"><div class="kicker">New story</div>
+    <label for="stitle">Theme (e.g. conflict with an engineer)</label><input id="stitle">
+    ${fields}
+    <div class="row"><button class="btn" onclick="addStory()">Save story</button></div></div>
+    <div class="panel"><div class="kicker">Your bank (${D.stars.length})</div>${list}</div>`;
+}
+function checks(s){
+  return [
+    {t:'Specific situation with a clear context',ok:s.S.length>40},
+    {t:'Your own actions, not "we"',ok:/\bI\b|\bI'm\b|\bmy\b/i.test(s.A)&&s.A.length>60},
+    {t:'Measurable result with a number',ok:/\d/.test(s.R)},
+    {t:'Impact and a lesson learned',ok:s.I.length>40}
+  ];
+}
+function addStory(){
+  const g=id=>document.getElementById(id).value.trim();
+  const s={title:g('stitle')||'Untitled',when:new Date().toLocaleDateString(),S:g('sS'),T:g('sT'),A:g('sA'),R:g('sR'),I:g('sI')};
+  if(!s.S&&!s.A&&!s.R){announce('Add at least a situation, action, or result.');return;}
+  D.stars.push(s);save();render();announce('Story saved.');
+}
+function delStory(i){D.stars.splice(i,1);save();render();}
+
+/* ---- Backup: export and import progress as text ---- */
+function dataView(){
+  return `<div class="panel"><div class="kicker">Backup</div>
+    <p class="muted">Progress is saved in this browser. To move it to another device, copy the text below and paste it into Import on the other device.</p>
+    <textarea class="code" id="exp" readonly aria-label="Your progress backup text">${esc(JSON.stringify(D))}</textarea>
+    <div class="row"><button class="btn cyan" onclick="copyExp()">Copy backup</button></div>
+    <label for="imp">Import backup</label><textarea class="code" id="imp" aria-label="Paste backup text to import" placeholder="Paste backup text here"></textarea>
+    <div class="row"><button class="btn" onclick="importData()">Import</button></div></div>`;
+}
+function copyExp(){const t=document.getElementById('exp');t.select();try{document.execCommand('copy');announce('Backup copied.');}catch(e){announce('Select the text and copy it manually.');}}
+function importData(){
+  try{const v=JSON.parse(document.getElementById('imp').value);if(!v||typeof v!=='object'||!v.q)throw 0;D=v;if(!D.stars)D.stars=[];save();announce('Imported.');go('home');}
+  catch(e){announce('That backup could not be read.');}
+}
+
+function celebrate(){
+  const ems=['🎉','⭐','🏆','✨','🚀'];
+  for(let i=0;i<18;i++){
+    const s=document.createElement('span');
+    s.textContent=ems[i%ems.length];s.setAttribute('aria-hidden','true');
+    s.style.cssText='position:fixed;left:'+(Math.random()*100)+'vw;top:-30px;font-size:'+(18+Math.random()*16)+'px;z-index:60;pointer-events:none;animation:fall '+(1.6+Math.random()*1.4)+'s linear forwards';
+    document.body.appendChild(s);setTimeout(()=>s.remove(),3200);
+  }
+}
+
+/* ---- Mock interview: 3 random questions, timed steps, no feedback until the report ---- */
+let mock=null;
+function startMock(){
+  const idx=[...BANK.keys()].sort(()=>Math.random()-.5).slice(0,3);
+  mock={qs:idx,qi:0,si:0,ans:[[]],timer:null,left:60,done:false};
+  view='mock'; focusNext=true; run=null; stopTimer(); render(); window.scrollTo({top:0});
+}
+function mockView(){
+  if(mock.done) return mockReport();
+  const b=BANK[mock.qs[mock.qi]], st=b.steps[mock.si];
+  if(!mock.timer) startMockTimer();
+  const opts=st.o.map((o,i)=>`<button class="opt" onclick="mockAnswer(${i})">${esc(o.t)}</button>`).join('');
+  return `<div class="panel">
+    <div class="row" style="justify-content:space-between;margin-top:0"><div class="kicker" style="margin:0">Mock interview · Question ${mock.qi+1}/3 · Step ${mock.si+1}/${b.steps.length}</div><span class="timer" id="mt">⏱ ${mock.left}s</span></div>
+    <h2 style="margin-top:10px">${esc(b.q)}</h2>
+    <p class="muted">${esc(st.p)}</p>
+    <div role="group" aria-label="${esc(st.p)}">${opts}</div>
+    <p class="muted">No feedback until the final report.</p>
+    <div class="row"><button class="nav" onclick="endMock()">End mock early</button></div></div>`;
+}
+function startMockTimer(){
+  mock.left=60;
+  mock.timer=setInterval(()=>{
+    mock.left--;
+    const el=document.getElementById('mt'); if(el) el.textContent='⏱ '+mock.left+'s';
+    if(mock.left<=0) mockAnswer(-1);
+  },1000);
+}
+function stopMockTimer(){ if(mock&&mock.timer){clearInterval(mock.timer);mock.timer=null;} }
+function mockAnswer(i){
+  if(!mock||mock.done) return;
+  stopMockTimer();
+  const b=BANK[mock.qs[mock.qi]], st=b.steps[mock.si];
+  mock.ans[mock.qi].push(i<0?0:st.o[i].q);
+  mock.si++;
+  if(mock.si>=b.steps.length){
+    mock.si=0; mock.qi++;
+    if(mock.qi>=mock.qs.length) return finishMock();
+    mock.ans.push([]);
+  }
+  focusNext=true; render();
+}
+function endMock(){ stopMockTimer(); finishMock(); }
+function mockScore(n){
+  const b=BANK[mock.qs[n]], a=mock.ans[n]||[];
+  return Math.round(a.reduce((x,y)=>x+y,0)/(b.steps.length*2)*100);
+}
+function finishMock(){
+  stopMockTimer();
+  mock.done=true;
+  const done=mock.ans.map((_,n)=>mockScore(n));
+  const overall=Math.round(done.reduce((x,y)=>x+y,0)/(done.length||1));
+  D.mocks=(D.mocks||[]).concat([{date:Date.now(),overall}]).slice(-20);
+  save(); focusNext=true; render();
+  if(overall>=80) celebrate();
+  announce('Mock interview complete. Overall '+overall+' percent.');
+}
+function mockReport(){
+  const done=mock.ans.map((_,n)=>mockScore(n));
+  const overall=Math.round(done.reduce((x,y)=>x+y,0)/(done.length||1));
+  const band=overall>=80?'Interview-ready pace':overall>=60?'Solid, tighten the weak steps':'Keep drilling before interviews';
+  const rows=mock.ans.map((a,n)=>{
+    const b=BANK[mock.qs[n]];
+    const weak=a.map((q,k)=>q<2?b.steps[k].name:null).filter(Boolean);
+    return `<div class="story"><b>${n+1}. ${esc(b.mod)}</b> · ${done[n]}%
+      <div class="muted">${weak.length?'Review: '+weak.map(esc).join(', '):'Every step was strong.'}</div>
+      <div class="feedback"><b>Model answer:</b> ${esc(b.model)}</div></div>`;
+  }).join('');
+  const hist=(D.mocks||[]).slice(-5).map(m=>`${new Date(m.date).toLocaleDateString()}: ${m.overall}%`).join(' · ');
+  return `<div class="panel">
+    <div class="kicker">Final report</div>
+    <h2>${overall}% · ${esc(band)}</h2>
+    <div class="bar"><i style="width:${overall}%"></i></div>
+    <p class="muted">Recent mocks: ${esc(hist)}</p>
+    ${rows}
+    <div class="row"><button class="btn" onclick="startMock()">Run another mock</button><button class="btn ghost" onclick="go('home')">Dashboard</button></div>
+  </div>`;
+}
+
+render();
+</script>
+</body>
+</html>
